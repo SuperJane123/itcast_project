@@ -2,7 +2,7 @@
   <div class="login">
     <div class="container">
         <img src="../assets/webwxgetmsgimg.jpeg" class="avatar" alt="">
-      <el-form :model="loginForm" :rules="rules" ref="ruleForm" class="demo-ruleForm">
+      <el-form :model="loginForm" :rules="rules" ref="loginForm" class="demo-ruleForm">
         <el-form-item prop="username">
           <el-input prefix-icon= "myicon-user" v-model="loginForm.username" placeholder="请输入用户名"></el-input>
         </el-form-item>
@@ -10,7 +10,7 @@
           <el-input type="password" v-model="loginForm.password"  prefix-icon="myicon-key" placeholder="请输入密码"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" class="login-btn" >登陆</el-button>
+          <el-button type="primary" class="login-btn" @click="login">登陆</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -22,8 +22,8 @@ export default {
   data () {
     return {
       loginForm: {
-        username: '',
-        password: ''
+        username: 'admin',
+        password: '123456'
       },
       rules: {
         name: [
@@ -36,6 +36,29 @@ export default {
           { required: true, message: '请输入密码', trigger: 'blur' }
         ]
       }
+    }
+  },
+
+  methods: {
+    login () {
+      // 判断表单是否为空，element有提供验证方法validate
+      this.$refs.loginForm.validate(valid => {
+        if (valid) { // 如果为true则为二次通过，否则不通过
+          console.log('可以发送请求了')
+          this.$message({
+            showClose: true,
+            message: '登陆成功',
+            type: 'success'
+          })
+        } else {
+          this.$message({
+            showClose: true,
+            message: '登陆失败',
+            type: 'error'
+          })
+          return false
+        }
+      })
     }
   }
 }
