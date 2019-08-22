@@ -50,15 +50,25 @@ export default {
           login(this.loginForm)
             .then(res => {
               console.log(res)
+              if (res.data.meta.status === 200) {
+                // 如果登陆成功。储存token，跳转页面
+                localStorage.setItem('itcast_manager_token', res.data.data.token)
+                this.$router.push({ name: 'home' })
+              }
             })
             .catch(err => {
               console.log(err)
+              this.$message({
+                showClose: true,
+                message: '服务器异常，请稍后再试',
+                type: 'error'
+              })
             })
         } else {
           this.$message({
             showClose: true,
-            message: '登陆失败',
-            type: 'error'
+            message: '请输入所有必填数据',
+            type: 'warning'
           })
           return false
         }
