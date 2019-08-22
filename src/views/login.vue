@@ -18,12 +18,14 @@
 </template>
 
 <script>
+import { login } from '@/api/login_index.js'
+
 export default {
   data () {
     return {
       loginForm: {
-        username: 'admin',
-        password: '123456'
+        username: '',
+        password: ''
       },
       rules: {
         name: [
@@ -44,12 +46,14 @@ export default {
       // 判断表单是否为空，element有提供验证方法validate
       this.$refs.loginForm.validate(valid => {
         if (valid) { // 如果为true则为二次通过，否则不通过
-          console.log('可以发送请求了')
-          this.$message({
-            showClose: true,
-            message: '登陆成功',
-            type: 'success'
-          })
+          console.log(this.loginForm)
+          login(this.loginForm)
+            .then(res => {
+              console.log(res)
+            })
+            .catch(err => {
+              console.log(err)
+            })
         } else {
           this.$message({
             showClose: true,
