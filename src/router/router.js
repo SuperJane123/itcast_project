@@ -8,6 +8,7 @@ import VueRouter from 'vue-router'
 import Login from '@/views/login.vue'
 import Home from '@/views/home.vue'
 import Wel from '@/views/wel.vue'
+import Users from '@/views/user/users.vue'
 
 // 让vue使用路由管理
 Vue.use(VueRouter)
@@ -36,6 +37,11 @@ export default new VueRouter({
           name: 'wel',
           path: 'wel',
           component: Wel
+        },
+        {
+          name: 'users',
+          path: 'users',
+          component: Users
         }
       ]
     }

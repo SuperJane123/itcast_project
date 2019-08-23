@@ -12,7 +12,6 @@ Vue.config.productionTip = false
 
 // 添加导航守卫，to：目标路由对象，里面的一个属性path就是目标路由的path值
 router.beforeEach((to, from, next) => {
-  console.log(to)
   // 获取token
   let mytoken = localStorage.getItem('itcast_manager_token')
   if (mytoken || to.path === '/login') {

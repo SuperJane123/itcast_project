@@ -4,7 +4,9 @@
       <el-aside width="200px">
         <img src="../assets/logo.png" alt="" class="logo">
         <el-menu default-active="2" class="el-menu-vertical-demo"
+        :router="true"
         :unique-opened='true'
+        text-color="#545c64"
         active-text-color = '#3399CC'
         >
           <el-submenu index="1">
@@ -12,7 +14,7 @@
               <i class="el-icon-location"></i>
               <span>用户管理</span>
             </template>
-            <el-menu-item index="1-1">
+            <el-menu-item index="/home/users" >
               <template slot="title">
                 <i class="el-icon-menu"></i>
                 <span>用户列表</span>
