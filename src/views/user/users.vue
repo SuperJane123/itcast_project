@@ -11,11 +11,13 @@
     <div style="margin-top: 15px;">
       <el-input
         placeholder="请输入内容"
-        v-model="userkey"
+        v-model="userobj.query"
         class="input-with-select"
         style="width:300px;margin-right:10px"
+        @keydown.enter.native="init"
+        @input.native="init"
       >
-        <el-button slot="append" icon="el-icon-search"></el-button>
+        <el-button slot="append" icon="el-icon-search" @click='init'></el-button>
       </el-input>
       <el-button type="success" plain>成功按钮</el-button>
     </div>
@@ -58,7 +60,6 @@ import { getAllUsers } from '../../api/users_index'
 export default {
   data () {
     return {
-      userkey: '',
       status: true,
       userobj: {
         query: '',
@@ -71,17 +72,26 @@ export default {
     }
   },
 
+  methods: {
+    init () {
+      getAllUsers(this.userobj)
+        .then(res => {
+          console.log(res)
+          if (res.data.meta.status === 200) {
+            this.usersList = res.data.data.users
+          } else if (res.data.meta.status === 400) {
+            this.$message.error(res.data.meta.msg)
+            this.$router.push({ name: 'login' })
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    }
+  },
+
   mounted () {
-    getAllUsers(this.userobj)
-      .then(res => {
-        console.log(res)
-        if (res.data.meta.status === 200) {
-          this.usersList = res.data.data.users
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
+    this.init()
   }
 }
 </script>
