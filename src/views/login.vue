@@ -84,6 +84,9 @@ export default {
   width: 100%;
   height: 100%;
   background-color: #2f4050;
+  background-image: url('../assets/timg.jpeg');
+  background-size: 100%;
+  // background-repeat: no-repeat;
   .container {
     position: absolute;
     left: 0;
@@ -91,7 +94,9 @@ export default {
     width: 400px;
     padding: 0px 40px 15px 40px;
     margin: 200px auto;
-    background: white;
+    // background: white;
+    // background-color: rgba(0, 0, 0, 1);
+
     .avatar {
       position: relative;
       left: 50%;

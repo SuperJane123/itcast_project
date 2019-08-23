@@ -7,6 +7,7 @@ import VueRouter from 'vue-router'
 // 引入组件
 import Login from '@/views/login.vue'
 import Home from '@/views/home.vue'
+import Wel from '@/views/wel.vue'
 
 // 让vue使用路由管理
 Vue.use(VueRouter)
@@ -28,7 +29,15 @@ export default new VueRouter({
     {
       name: 'home',
       path: '/home',
-      component: Home
+      component: Home,
+      redirect: { name: 'wel' },
+      children: [
+        {
+          name: 'wel',
+          path: 'wel',
+          component: Wel
+        }
+      ]
     }
   ]
 

@@ -17,7 +17,7 @@ router.beforeEach((to, from, next) => {
   let mytoken = localStorage.getItem('itcast_manager_token')
   if (mytoken || to.path === '/login') {
     next()
-  }else {
+  } else {
     // 重定向
     next({ path: '/login' })
   }
