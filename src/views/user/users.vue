@@ -51,6 +51,18 @@
     </el-table>
 
     <!-- 分页部分 -->
+
+    <div class="block">
+    <el-pagination
+       @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="userobj.pagenum"
+      :page-sizes="[1, 2, 3, 4]"
+      :page-size="userobj.pagenum"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total">
+    </el-pagination>
+  </div>
   </div>
 </template>
 
@@ -60,6 +72,7 @@ import { getAllUsers } from '../../api/users_index'
 export default {
   data () {
     return {
+      total: 0,
       status: true,
       userobj: {
         query: '',
@@ -68,17 +81,37 @@ export default {
 
       },
       usersList: [ ]
-
     }
   },
 
   methods: {
+    // 当切换size下拉列表时触发
+    handleSizeChange (val) {
+      console.log(`每页 ${val} 条`)
+      this.userobj.pagesize = val
+
+      // 修改参数
+      this.init()
+    },
+
+    // 当切换页码时触发
+    handleCurrentChange (val) {
+      console.log(`当前页: ${val}`)
+      this.userobj.pagenum = val
+
+      // 修改参数
+      this.init()
+    },
+
+    // 获取数据
     init () {
       getAllUsers(this.userobj)
         .then(res => {
           console.log(res)
           if (res.data.meta.status === 200) {
             this.usersList = res.data.data.users
+            // 获取总计记录数
+            this.total = res.data.data.total
           } else if (res.data.meta.status === 400) {
             this.$message.error(res.data.meta.msg)
             this.$router.push({ name: 'login' })
