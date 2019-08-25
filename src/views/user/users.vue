@@ -40,8 +40,8 @@
           <el-tooltip class="item" effect="light" content="编辑" placement="bottom" >
             <el-button type="primary" plain icon="el-icon-edit" @click="showEditDialog(scope.row)"></el-button>
           </el-tooltip>
-          <el-tooltip class="item" effect="light" content="添加" placement="bottom">
-            <el-button type="success" plain icon="el-icon-check"></el-button>
+          <el-tooltip class="item" effect="light" content="分配角色" placement="bottom">
+            <el-button type="success" plain icon="el-icon-d-caret" @click="showRoleDialog(scope.row)"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="light" content="删除" placement="bottom">
             <el-button type="warning" plain icon="el-icon-delete"></el-button>
@@ -107,11 +107,36 @@
       </div>
     </el-dialog>
 
+  <!-- 分配角色对话框 -->
+<el-dialog title="分配角色" :visible.sync=" roleDialogFormVisible">
+  <el-form :model="roleform" label-width="80px">
+    <el-form-item label="用户名" >
+      <!-- <el-input v-model="form.name" auto-complete="off"></el-input> -->
+      <span >{{roleform.username}}</span>
+    </el-form-item>
+    <el-form-item label="角色" >
+       <el-select v-model="roleform.rid" clearable placeholder="请选择">
+    <el-option
+      v-for="item in roleList"
+      :key="item.value"
+      :label="item.roleName"
+      :value="item.id">
+    </el-option>
+  </el-select>
+    </el-form-item>
+  </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="roleDialogFormVisible = false">取 消</el-button>
+    <el-button type="primary" @click = assignRole>确 定</el-button>
+  </div>
+</el-dialog>
+
   </div>
 </template>
 
 <script>
 import { getAllUsers, addNewUser, editUser } from '../../api/users_index'
+import { getAllRole, editRole } from '../../api/role_index'
 
 export default {
   data () {
@@ -141,6 +166,15 @@ export default {
 
       },
       editDialogFormVisible: false,
+
+      // 分配角色的用户信息
+      roleList: [],
+      roleform: {
+        username: '',
+        id: '',
+        rid: ''
+      },
+      roleDialogFormVisible: false,
 
       // 添加新增用户的验证规则
       rules: {
@@ -215,7 +249,7 @@ export default {
               // console.log(res)
               if (res.data.meta.status === 201) {
                 this.$message.success(res.data.meta.msg)
-                this.dialogFormVisible = false
+                this.addDialogFormVisible = false
 
                 // 重制表格  resetFields
                 this.$refs.addform.resetFields()
@@ -260,13 +294,53 @@ export default {
           console.log(err)
           this.$message.error('服务器出错，请稍后重试')
         })
+    },
+
+    showRoleDialog (row) {
+      this.roleDialogFormVisible = true
+      console.log(row)
+      this.roleform.username = row.username
+      this.roleform.id = row.id
+      this.roleform.rid = row.rid
+    },
+
+    // 实现分配角色功能
+    assignRole () {
+      console.log(this.roleform)
+      if (this.roleform.rid) {
+        editRole(this.roleform)
+          .then(res => {
+            console.log(res)
+            if (res.data.meta.status === 200) {
+              this.$message.success(res.data.meta.msg)
+              this.roleDialogFormVisible = false
+            } else {
+              this.$message.error(res.data.meta.msg)
+            }
+          })
+          .catch(err => {
+            console.log(err)
+            this.$message.error('服务器出错，请稍后重试')
+          })
+      } else {
+        this.$message.warning('请选择角色')
+      }
     }
 
   },
 
   mounted () {
     this.init()
-    console.log()
+    getAllRole()
+      .then(res => {
+        console.log(res)
+        if (res.data.meta.status === 200) {
+          this.roleList = res.data.data
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 }
 </script>
