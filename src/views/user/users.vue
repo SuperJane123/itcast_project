@@ -44,7 +44,7 @@
             <el-button type="success" plain icon="el-icon-d-caret" @click="showRoleDialog(scope.row)"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="light" content="删除" placement="bottom">
-            <el-button type="warning" plain icon="el-icon-delete"></el-button>
+            <el-button type="warning" plain icon="el-icon-delete" @click="showDelDialog(scope.row)"></el-button>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -131,11 +131,13 @@
   </div>
 </el-dialog>
 
+<!-- 删除弹框 -->
+
   </div>
 </template>
 
 <script>
-import { getAllUsers, addNewUser, editUser } from '../../api/users_index'
+import { getAllUsers, addNewUser, editUser, delUserById } from '../../api/users_index'
 import { getAllRole, editRole } from '../../api/role_index'
 
 export default {
@@ -296,6 +298,7 @@ export default {
         })
     },
 
+    // 给分配角色赋值
     showRoleDialog (row) {
       this.roleDialogFormVisible = true
       console.log(row)
@@ -325,6 +328,38 @@ export default {
       } else {
         this.$message.warning('请选择角色')
       }
+    },
+
+    showDelDialog (row) {
+      console.log(row)
+      this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        delUserById(row.id)
+          .then(res => {
+            console.log(res)
+            if (res.data.meta.status === 200) {
+              this.$message({
+                type: 'success',
+                message: '删除成功!'
+              })
+              this.init()
+            } else {
+              this.$message.error(res.data.meta.msg)
+            }
+          })
+          .catch(err => {
+            console.log(err)
+            this.$message.error('服务器出错，请稍后重试')
+          })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
     }
 
   },

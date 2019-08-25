@@ -8,6 +8,7 @@ export const getAllRole = () => {
   })
 }
 
+// 分配角色
 export const editRole = (data) => {
   return axios({
     url: `users/${data.id}/role`,
