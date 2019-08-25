@@ -19,7 +19,7 @@
       >
         <el-button slot="append" icon="el-icon-search" @click="init"></el-button>
       </el-input>
-      <el-button type="success" plain @click="dialogFormVisible = true">添加用户</el-button>
+      <el-button type="success" plain @click="addDialogFormVisible = true">添加用户</el-button>
     </div>
 
     <!-- 表格元素 -->
@@ -37,11 +37,11 @@
 
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-tooltip class="item" effect="light" content="编辑" placement="bottom">
-            <el-button type="primary" plain icon="el-icon-edit"></el-button>
+          <el-tooltip class="item" effect="light" content="编辑" placement="bottom" >
+            <el-button type="primary" plain icon="el-icon-edit" @click="showEditDialog(scope.row)"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="light" content="添加" placement="bottom">
-            <el-button type="success" plain  icon="el-icon-check"></el-button>
+            <el-button type="success" plain icon="el-icon-check"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="light" content="删除" placement="bottom">
             <el-button type="warning" plain icon="el-icon-delete"></el-button>
@@ -66,32 +66,52 @@
 
     <!-- 添加用户对话框 -->
 
-    <el-dialog title="添加用户" :visible.sync="dialogFormVisible" >
-  <el-form :model="addform" :label-width='"80px"' :rules="rules" ref="addform">
-    <el-form-item label="用户名" prop="username" >
-      <el-input v-model="addform.username" auto-complete="off"></el-input>
-    </el-form-item>
-    <el-form-item label="密码" prop="password">
-      <el-input v-model="addform.password" auto-complete="off" type="password"></el-input>
-    </el-form-item>
-     <el-form-item label="邮箱" prop="email">
-      <el-input v-model="addform.email" auto-complete="off"></el-input>
-    </el-form-item>
-     <el-form-item label="手机号" prop="mobile">
-      <el-input v-model="addform.mobile" auto-complete="off"></el-input>
-    </el-form-item>
-  </el-form>
-  <div slot="footer" class="dialog-footer">
-    <el-button @click="dialogFormVisible = false">取 消</el-button>
-    <el-button type="primary" @click="addNewUser">确 定</el-button>
-  </div>
-</el-dialog>
+    <el-dialog title="添加用户" :visible.sync="addDialogFormVisible">
+      <el-form :model="addform" :label-width='"80px"' :rules="rules" ref="addform">
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="addform.username" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="addform.password" auto-complete="off" type="password"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="addform.email" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号" prop="mobile">
+          <el-input v-model="addform.mobile" auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addDialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addNewUser">确 定</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 添加编辑用户对话框 -->
+
+     <el-dialog title="编辑用户" :visible.sync="editDialogFormVisible">
+      <el-form :model="editform" :label-width='"80px"' :rules="rules" ref="editform">
+        <el-form-item label="用户名">
+          <el-input v-model="editform.username" auto-complete="off" disabled style="width: 80px"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="editform.email" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号" prop="mobile">
+          <el-input v-model="editform.mobile" auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editDialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editUser">确 定</el-button>
+      </div>
+    </el-dialog>
 
   </div>
 </template>
 
 <script>
-import { getAllUsers, addNewUser } from '../../api/users_index'
+import { getAllUsers, addNewUser, editUser } from '../../api/users_index'
 
 export default {
   data () {
@@ -111,27 +131,40 @@ export default {
         email: '',
         mobile: ''
       },
-      dialogTableVisible: false,
-      dialogFormVisible: false,
+      addDialogFormVisible: false,
+
+      // 编辑用户的信息
+      editform: {
+        id: '',
+        email: '',
+        mobile: ''
+
+      },
+      editDialogFormVisible: false,
 
       // 添加新增用户的验证规则
       rules: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' }
         ],
-        password: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
-        ],
+        password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
         email: [
           { required: true, message: '请输入邮箱', trigger: 'blur' },
-          { pattern: /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/, message: '请输入合法的邮箱地址', trigger: 'blur' }
+          {
+            pattern: /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/,
+            message: '请输入合法的邮箱地址',
+            trigger: 'blur'
+          }
         ],
         mobile: [
-          { required: true, message: '请输手机号', trigger: 'blur' },
-          { pattern: /0?(13|14|15|18|17)[0-9]{9}/, message: '请输入正确的手机号码', trigger: 'blur' }
+          { required: false, message: '请输手机号', trigger: 'blur' },
+          {
+            pattern: /0?(13|14|15|18|17)[0-9]{9}/,
+            message: '请输入正确的手机号码',
+            trigger: 'blur'
+          }
         ]
       }
-
     }
   },
 
@@ -172,13 +205,14 @@ export default {
         })
     },
 
+    // 添加新用户
     addNewUser () {
       // 进行二次验证
       this.$refs.addform.validate(valid => {
         if (valid) {
           addNewUser(this.addform)
             .then(res => {
-              console.log(res)
+              // console.log(res)
               if (res.data.meta.status === 201) {
                 this.$message.success(res.data.meta.msg)
                 this.dialogFormVisible = false
@@ -195,18 +229,47 @@ export default {
             })
         }
       })
-    }
+    },
 
-    // 添加新用户
+    // 收集编辑用户信息
+    showEditDialog (row) {
+      // 利用scope.row获取当行数据对象
+      this.editDialogFormVisible = true
+      // console.log(row)
+      this.editform.id = row.id
+      this.editform.email = row.email
+      this.editform.mobile = row.mobile
+      this.editform.username = row.username
+    },
+
+    // 实现编辑功能
+    editUser () {
+      editUser(this.editform)
+        .then(res => {
+          console.log(res)
+          if (res.data.meta.status === 200) {
+            this.$message.success(res.data.meta.msg)
+            this.editDialogFormVisible = false
+            // 刷新页面
+            this.init()
+          } else {
+            this.$message.error(res.data.meta.msg)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+          this.$message.error('服务器出错，请稍后重试')
+        })
+    }
 
   },
 
   mounted () {
     this.init()
+    console.log()
   }
 }
 </script>
 
 <style lang="less" scoped>
-
 </style>

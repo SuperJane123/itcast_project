@@ -17,3 +17,12 @@ export const addNewUser = (data) => {
     data
   })
 }
+
+// 编辑用户信息
+export const editUser = (data) => {
+  return axios({
+    method: 'put',
+    url: `users/${data.id}`,
+    data
+  })
+}
