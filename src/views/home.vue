@@ -8,6 +8,7 @@
         :unique-opened='true'
         text-color="#545c64"
         active-text-color = '#3399CC'
+
         >
           <el-submenu index="1">
             <template slot="title">
@@ -109,7 +110,7 @@ export default {
   }
   .el-aside {
     // background-color: #545c64;
-    background-color: #fff
+    // background-color: #3399CC
   }
   .el-header {
     display: flex;

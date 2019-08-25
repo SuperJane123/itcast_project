@@ -28,7 +28,7 @@ export default {
         password: ''
       },
       rules: {
-        name: [
+        username: [
           // require是必填项
           // trigger是什么时候触发规则
           // message 触发后提示的信息
