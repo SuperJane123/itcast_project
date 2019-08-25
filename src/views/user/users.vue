@@ -31,7 +31,7 @@
       <el-table-column prop="mobile" label="电话"></el-table-column>
       <el-table-column label="用户状态" width="100">
         <template slot-scope="scope">
-          <el-switch v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="#dfdfdf"></el-switch>
+          <el-switch v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="#dfdfdf" @change = getStatus(scope.row.id,scope.row.mg_state)></el-switch>
         </template>
       </el-table-column>
 
@@ -137,7 +137,7 @@
 </template>
 
 <script>
-import { getAllUsers, addNewUser, editUser, delUserById } from '../../api/users_index'
+import { getAllUsers, addNewUser, editUser, delUserById, updateUserStatus } from '../../api/users_index'
 import { getAllRole, editRole } from '../../api/role_index'
 
 export default {
@@ -330,6 +330,7 @@ export default {
       }
     },
 
+    // 实现删除功能
     showDelDialog (row) {
       console.log(row)
       this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
@@ -360,6 +361,25 @@ export default {
           message: '已取消删除'
         })
       })
+    },
+
+    // 实现状态修改
+    getStatus (id, type) {
+      console.log(id, type)
+      updateUserStatus(id, type)
+        .then(res => {
+          console.log(res)
+          if (res.data.meta.status === 200) {
+            this.$message.success(res.data.meta.msg)
+            this.init()
+          } else {
+            this.$message.error(res.data.meta.msg)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+          this.$message.error('服务器出错，请稍后重试')
+        })
     }
 
   },
