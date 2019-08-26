@@ -9,6 +9,8 @@ import Login from '@/views/login.vue'
 import Home from '@/views/home.vue'
 import Wel from '@/views/wel.vue'
 import Users from '@/views/user/users.vue'
+import RightList from '../views/right/rightList.vue'
+import RolttList from '../views/right/roleList.vue'
 
 // 让vue使用路由管理
 Vue.use(VueRouter)
@@ -42,6 +44,16 @@ export default new VueRouter({
           name: 'users',
           path: 'users',
           component: Users
+        },
+        {
+          name: 'rightList',
+          path: 'rightList',
+          component: RightList
+        },
+        {
+          name: 'rolttList',
+          path: 'rolttList',
+          component: RolttList
         }
       ]
     }
