@@ -16,17 +16,20 @@
       <el-table-column type="expand">
         <template slot-scope="props">
           <!-- 添加layout布局 -->
+          <!-- 一级菜单 -->
           <el-row v-for="first in props.row.children" :key="first.id" style="margin-bottom: 10px">
             <el-col :span="4">
               <el-tag closable type="success">{{first.authName}}</el-tag>
             </el-col>
+            <!-- 二级菜单 -->
             <el-col :span="20">
               <el-row  v-for="second in first.children" :key="second.id" style="margin-bottom: 5px">
                 <el-col :span="4">
                   <el-tag closable type="error">{{second.authName}}</el-tag>
                 </el-col>
+                <!-- 三级菜单 -->
                 <el-col :span="20" >
-                    <el-tag closable type="info" v-for="third in second.children" :key="third.id" style="margin-right: 5px;margin-bottom: 5px">{{second.authName}}</el-tag>
+                    <el-tag closable type="info" v-for="third in second.children" :key="third.id" style="margin-right: 5px;margin-bottom: 5px" @close="delRights(props.row,third.id)">{{third.authName}}</el-tag>
                 </el-col>
               </el-row>
             </el-col>
@@ -57,11 +60,35 @@
 </template>
 
 <script>
-import { getAllroles } from '@/api/rightList_index'
+import { getAllroles, delRightById } from '@/api/rightList_index'
 export default {
   data () {
     return {
       roleList: []
+    }
+  },
+
+  // 删除权限功能
+  methods: {
+    delRights (row, rightId) {
+      // console.log(id, rid)
+
+      delRightById(row.id, rightId)
+        .then(res => {
+          console.log(res)
+          if (res.data.meta.status === 200) {
+            this.$message.success(res.data.meta.msg)
+            console.log(row)
+            // 局部刷新展开行
+            row.children = res.data.data
+          } else {
+            this.$message.error(res.data.meta.msg)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+          this.$message.error('服务器出错，请稍后重试')
+        })
     }
   },
 
