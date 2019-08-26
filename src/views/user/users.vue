@@ -137,8 +137,8 @@
 </template>
 
 <script>
-import { getAllUsers, addNewUser, editUser, delUserById, updateUserStatus } from '../../api/users_index'
-import { getAllRole, editRole } from '../../api/role_index'
+import { getAllUsers, addNewUser, editUser, editRole, delUserById, updateUserStatus } from '../../api/users_index'
+import { getAllRole } from '../../api/role_index'
 
 export default {
   data () {
@@ -185,20 +185,20 @@ export default {
         ],
         password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
         email: [
-          { required: true, message: '请输入邮箱', trigger: 'blur' },
-          {
-            pattern: /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/,
-            message: '请输入合法的邮箱地址',
-            trigger: 'blur'
-          }
+          { required: true, message: '请输入邮箱', trigger: 'blur' }
+          // {
+          //   pattern: /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/,
+          //   message: '请输入合法的邮箱地址',
+          //   trigger: 'blur'
+          // }
         ],
         mobile: [
-          { required: false, message: '请输手机号', trigger: 'blur' },
-          {
-            pattern: /0?(13|14|15|18|17)[0-9]{9}/,
-            message: '请输入正确的手机号码',
-            trigger: 'blur'
-          }
+          { required: false, message: '请输手机号', trigger: 'blur' }
+          // {
+          //   pattern: /0?(13|14|15|18|17)[0-9]{9}/,
+          //   message: '请输入正确的手机号码',
+          //   trigger: 'blur'
+          // }
         ]
       }
     }
@@ -216,7 +216,7 @@ export default {
 
     // 当切换页码时触发
     handleCurrentChange (val) {
-      // console.log(`当前页: ${val}`)
+      console.log(`当前页: ${val}`)
       this.userobj.pagenum = val
 
       // 修改参数
@@ -227,10 +227,16 @@ export default {
     init () {
       getAllUsers(this.userobj)
         .then(res => {
+          console.log(res)
           if (res.data.meta.status === 200) {
             this.usersList = res.data.data.users
             // 获取总计记录数
             this.total = res.data.data.total
+            // this.userobj.pagenum = res.data.data.pagenum
+            // if (res.data.data.users.length === 1) {
+            //   this.userobj.pagenum--
+            // }
+            this.userobj.pagenum = res.data.data.pagenum
           } else if (res.data.meta.status === 400) {
             this.$message.error(res.data.meta.msg)
             this.$router.push({ name: 'login' })
@@ -252,9 +258,9 @@ export default {
               if (res.data.meta.status === 201) {
                 this.$message.success(res.data.meta.msg)
                 this.addDialogFormVisible = false
-
                 // 重制表格  resetFields
                 this.$refs.addform.resetFields()
+                this.init()
               } else {
                 this.$message.error(res.data.meta.msg)
               }
@@ -332,6 +338,13 @@ export default {
 
     // 实现删除功能
     showDelDialog (row) {
+      console.log(this.userobj.pagenum)
+      console.log(this.total)
+      console.log(this.userobj.pagesize)
+      if (Math.ceil((this.total - 1) / this.userobj.pagesize) < this.userobj.pagenum) {
+        this.userobj.pagenum--
+      }
+
       console.log(row)
       this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
         confirmButtonText: '确定',
@@ -342,10 +355,8 @@ export default {
           .then(res => {
             console.log(res)
             if (res.data.meta.status === 200) {
-              this.$message({
-                type: 'success',
-                message: '删除成功!'
-              })
+              this.$message.success(res.data.meta.msg)
+
               this.init()
             } else {
               this.$message.error(res.data.meta.msg)
@@ -371,6 +382,7 @@ export default {
           console.log(res)
           if (res.data.meta.status === 200) {
             this.$message.success(res.data.meta.msg)
+
             this.init()
           } else {
             this.$message.error(res.data.meta.msg)
@@ -386,6 +398,8 @@ export default {
 
   mounted () {
     this.init()
+
+    // 加载角色列表数据
     getAllRole()
       .then(res => {
         console.log(res)
