@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+   <canvas id='mycanvas' width="200" height="100" style="border:1px sold #000"></canvas>
+</body>
+
+<script>
+        // canvas制作直线
+
+        // moveTo(x,y)定义线条开始坐标
+        // lineTo(x,y)定义线条结束坐标
+        // 绘制线条我们必须要用到ink的方法，就像stoke()
+        var c = document.getElementById('mycanvas')
+        var ctx = c.getContext('2d')
+        // ctx.moveTo(0,0)
+        // ctx.lineTo(200,100)
+        // ctx.stroke()
+        ctx.moveTo(0,50)
+        ctx.lineTo(200,100)
+        ctx.stroke()
+
+
+
+    </script>
+
+</html>

@@ -232,10 +232,10 @@ export default {
             this.usersList = res.data.data.users
             // 获取总计记录数
             this.total = res.data.data.total
-            // this.userobj.pagenum = res.data.data.pagenum
-            // if (res.data.data.users.length === 1) {
-            //   this.userobj.pagenum--
-            // }
+
+            if (res.data.data.users.length === 1) {
+              this.userobj.pagenum = res.data.data.pagenum
+            }
             this.userobj.pagenum = res.data.data.pagenum
           } else if (res.data.meta.status === 400) {
             this.$message.error(res.data.meta.msg)
@@ -338,12 +338,12 @@ export default {
 
     // 实现删除功能
     showDelDialog (row) {
-      console.log(this.userobj.pagenum)
-      console.log(this.total)
-      console.log(this.userobj.pagesize)
-      if (Math.ceil((this.total - 1) / this.userobj.pagesize) < this.userobj.pagenum) {
-        this.userobj.pagenum--
-      }
+      // console.log(this.userobj.pagenum)
+      // console.log(this.total)
+      // console.log(this.userobj.pagesize)
+      // if (Math.ceil((this.total - 1) / this.userobj.pagesize) < this.userobj.pagenum) {
+      //   this.userobj.pagenum--
+      // }
 
       console.log(row)
       this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
