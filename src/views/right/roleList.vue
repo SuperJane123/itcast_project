@@ -19,13 +19,13 @@
           <!-- 一级菜单 -->
           <el-row v-for="first in props.row.children" :key="first.id" style="margin-bottom: 10px">
             <el-col :span="4">
-              <el-tag closable type="success" @close="delRights(props.row,first.id)">{{first.authName}}</el-tag>
+              <el-tag closable type="success" @close="delRights(props.row,first.id);cnt=0">{{first.authName}}</el-tag>
             </el-col>
             <!-- 二级菜单 -->
             <el-col :span="20">
               <el-row v-for="second in first.children" :key="second.id" style="margin-bottom: 5px">
                 <el-col :span="4">
-                  <el-tag closable type="error" @close="delRights(props.row,second.id)">{{second.authName}}</el-tag>
+                  <el-tag closable type="error" @close="delRights(props.row,second.id);cnt=0">{{second.authName}}</el-tag>
                 </el-col>
                 <!-- 三级菜单 -->
                 <el-col :span="20">
@@ -89,6 +89,7 @@ import { getAllrights } from '@/api/rightList_index'
 export default {
   data () {
     return {
+      cnt: 0,
       roleid: '',
       grandDialogTableVisible: false,
       roleList: [],
@@ -119,15 +120,31 @@ export default {
     // 删除权限功能
     delRights (row, rightId) {
       // console.log(id, rid)
+      console.log(row)
 
       delRightById(row.id, rightId)
         .then(res => {
           console.log(res)
           if (res.data.meta.status === 200) {
-            this.$message.success(res.data.meta.msg)
+            if (this.cnt === 0) {
+              this.$message.success(res.data.meta.msg)
+            }
+
             // console.log(row)
             // 局部刷新展开行
             row.children = res.data.data
+            // 使用递归完善删除功能
+            row.children.forEach(first => {
+              if (first.children.length === 0) {
+                this.delRights(row, first.id)
+              } else {
+                first.children.forEach(second => {
+                  if (second.children.length === 0) {
+                    this.delRights(row, second.id)
+                  }
+                })
+              }
+            })
           } else {
             this.$message.error(res.data.meta.msg)
           }
