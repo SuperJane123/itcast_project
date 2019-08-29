@@ -7,7 +7,8 @@ import axios from 'axios'
 // axios.defaults.baseURL = 'http://192.168.70.79:8888/api/private/v1/'
 // axios.defaults.baseURL = 'http://192.168.70.59:8888/api/private/v1/'
 // axios.defaults.baseURL = 'http://192.168.1.102:8888/api/private/v1/'
-axios.defaults.baseURL = 'http://192.168.70.92:8888/api/private/v1/'
+// axios.defaults.baseURL = 'http://192.168.70.92:8888/api/private/v1/'
+axios.defaults.baseURL = 'http://192.168.70.61:8888/api/private/v1/'
 
 // 添加请求拦截器
 axios.interceptors.request.use(function (config) {

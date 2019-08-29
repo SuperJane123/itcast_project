@@ -11,6 +11,9 @@ import Wel from '@/views/wel.vue'
 import Users from '@/views/user/users.vue'
 import RightList from '../views/right/rightList.vue'
 import RolttList from '../views/right/roleList.vue'
+import Goods from '../views/goods/goods.vue'
+import List from '../views/goods/list.vue'
+import Add from '../views/goods/add.vue'
 
 // 让vue使用路由管理
 Vue.use(VueRouter)
@@ -54,9 +57,28 @@ export default new VueRouter({
           name: 'rolttList',
           path: 'roles',
           component: RolttList
+        },
+        {
+          name: 'goods',
+          path: 'goods',
+          component: Goods,
+          redirect: { name: 'list' },
+          children: [
+            {
+              name: 'list',
+              path: 'list',
+              component: List
+            },
+            {
+              name: 'add',
+              path: 'add',
+              component: Add
+            }
+          ]
         }
       ]
     }
+
   ]
 
 })

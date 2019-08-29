@@ -50,6 +50,7 @@
           <a href="javascript" class="welcome">退出</a>
         </el-header>
         <el-main>
+
          <router-view></router-view>
         </el-main>
       </el-container>
