@@ -47,12 +47,12 @@ export default new VueRouter({
         },
         {
           name: 'rightList',
-          path: 'rightList',
+          path: 'rights',
           component: RightList
         },
         {
           name: 'rolttList',
-          path: 'rolttList',
+          path: 'roles',
           component: RolttList
         }
       ]

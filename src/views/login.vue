@@ -49,7 +49,7 @@ export default {
           console.log(this.loginForm)
           login(this.loginForm)
             .then(res => {
-              console.log(res)
+              // console.log(res)
               if (res.data.meta.status === 200) {
                 // 如果登陆成功。储存token，跳转页面
                 localStorage.setItem('itcast_manager_token', res.data.data.token)

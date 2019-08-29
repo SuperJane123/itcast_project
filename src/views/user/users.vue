@@ -138,7 +138,7 @@
 
 <script>
 import { getAllUsers, addNewUser, editUser, editRole, delUserById, updateUserStatus } from '../../api/users_index'
-import { getAllRole } from '../../api/roleList_index'
+import { getAllRole } from '../../api/role_index'
 
 export default {
   data () {
@@ -216,7 +216,7 @@ export default {
 
     // 当切换页码时触发
     handleCurrentChange (val) {
-      console.log(`当前页: ${val}`)
+      // console.log(`当前页: ${val}`)
       this.userobj.pagenum = val
 
       // 修改参数
@@ -230,8 +230,6 @@ export default {
           console.log(res)
           if (res.data.meta.status === 200) {
             this.usersList = res.data.data.users
-            console.log(this.usersList)
-            console.log(this.usersList.length)
 
             // 获取总计记录数
             this.total = res.data.data.total
@@ -307,7 +305,6 @@ export default {
     // 给分配角色赋值
     showRoleDialog (row) {
       this.roleDialogFormVisible = true
-      console.log(row)
       this.roleform.username = row.username
       this.roleform.id = row.id
       this.roleform.rid = row.rid
@@ -315,11 +312,9 @@ export default {
 
     // 实现分配角色功能
     assignRole () {
-      console.log(this.roleform)
       if (this.roleform.rid) {
         editRole(this.roleform)
           .then(res => {
-            console.log(res)
             if (res.data.meta.status === 200) {
               this.$message.success(res.data.meta.msg)
               this.roleDialogFormVisible = false
@@ -357,7 +352,6 @@ export default {
       }).then(() => {
         delUserById(row.id)
           .then(res => {
-            console.log(res)
             if (res.data.meta.status === 200) {
               this.$message.success(res.data.meta.msg)
 
@@ -380,7 +374,6 @@ export default {
 
     // 实现状态修改
     getStatus (id, type) {
-      console.log(id, type)
       updateUserStatus(id, type)
         .then(res => {
           console.log(res)
@@ -406,7 +399,6 @@ export default {
     // 加载角色列表数据
     getAllRole()
       .then(res => {
-        console.log(res)
         if (res.data.meta.status === 200) {
           this.roleList = res.data.data
         }
