@@ -24,3 +24,12 @@ export const grandRights = (roleId, rids) => {
 
   })
 }
+
+// 添加角色
+export const addNewRole = (data) => {
+  return axios({
+    url: 'roles',
+    method: 'post',
+    data
+  })
+}

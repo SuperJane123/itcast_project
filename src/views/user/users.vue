@@ -67,7 +67,7 @@
     <!-- 添加用户对话框 -->
 
     <el-dialog title="添加用户" :visible.sync="addDialogFormVisible">
-      <el-form :model="addform" :label-width='"80px"' :rules="rules" ref="addform">
+      <el-form :model="addform" :label-width='"80px"' :rules="rules" ref="addForm">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="addform.username" auto-complete="off"></el-input>
         </el-form-item>
@@ -138,7 +138,7 @@
 
 <script>
 import { getAllUsers, addNewUser, editUser, editRole, delUserById, updateUserStatus } from '../../api/users_index'
-import { getAllRole } from '../../api/role_index'
+import { getAllRole } from '../../api/roleList_index'
 
 export default {
   data () {
@@ -230,13 +230,11 @@ export default {
           console.log(res)
           if (res.data.meta.status === 200) {
             this.usersList = res.data.data.users
+            console.log(this.usersList)
+            console.log(this.usersList.length)
+
             // 获取总计记录数
             this.total = res.data.data.total
-
-            if (res.data.data.users.length === 1) {
-              this.userobj.pagenum = res.data.data.pagenum
-            }
-            this.userobj.pagenum = res.data.data.pagenum
           } else if (res.data.meta.status === 400) {
             this.$message.error(res.data.meta.msg)
             this.$router.push({ name: 'login' })
@@ -250,7 +248,7 @@ export default {
     // 添加新用户
     addNewUser () {
       // 进行二次验证
-      this.$refs.addform.validate(valid => {
+      this.$refs.addForm.validate(valid => {
         if (valid) {
           addNewUser(this.addform)
             .then(res => {
@@ -259,7 +257,7 @@ export default {
                 this.$message.success(res.data.meta.msg)
                 this.addDialogFormVisible = false
                 // 重制表格  resetFields
-                this.$refs.addform.resetFields()
+                this.$refs.addForm.resetFields()
                 this.init()
               } else {
                 this.$message.error(res.data.meta.msg)
@@ -269,6 +267,8 @@ export default {
               console.log(err)
               this.$message.error('服务器出错，请稍后重试')
             })
+        } else {
+          this.$message.warning('请填写表单信息')
         }
       })
     },
@@ -344,6 +344,10 @@ export default {
       // if (Math.ceil((this.total - 1) / this.userobj.pagesize) < this.userobj.pagenum) {
       //   this.userobj.pagenum--
       // }
+      console.log(this.usersList)
+      if (this.usersList.length === 1) {
+        --this.userobj.pagenum
+      }
 
       console.log(row)
       this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {

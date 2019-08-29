@@ -8,7 +8,9 @@
     </el-breadcrumb>
 
     <!-- 添加按钮 -->
-    <el-button type="success">成功按钮</el-button>
+    <el-button type="success" @click="showAddDialog">添加角色</el-button>
+
+    <!-- 添加表单对话框 -->
 
     <!-- 添加表格 -->
     <el-table :data="roleList" border style="width: 100%">
@@ -19,13 +21,21 @@
           <!-- 一级菜单 -->
           <el-row v-for="first in props.row.children" :key="first.id" style="margin-bottom: 10px">
             <el-col :span="4">
-              <el-tag closable type="success" @close="delRights(props.row,first.id);cnt=0">{{first.authName}}</el-tag>
+              <el-tag
+                closable
+                type="success"
+                @close="cnt=0;delRights(props.row,first.id)"
+              >{{first.authName}}</el-tag>
             </el-col>
             <!-- 二级菜单 -->
             <el-col :span="20">
               <el-row v-for="second in first.children" :key="second.id" style="margin-bottom: 5px">
                 <el-col :span="4">
-                  <el-tag closable type="error" @close="delRights(props.row,second.id);cnt=0">{{second.authName}}</el-tag>
+                  <el-tag
+                    closable
+                    type="error"
+                    @close="cnt=0;delRights(props.row,second.id)"
+                  >{{second.authName}}</el-tag>
                 </el-col>
                 <!-- 三级菜单 -->
                 <el-col :span="20">
@@ -35,7 +45,7 @@
                     v-for="third in second.children"
                     :key="third.id"
                     style="margin-right: 5px;margin-bottom: 5px"
-                    @close="delRights(props.row,third.id)"
+                    @close="cnt=0;delRights(props.row,third.id)"
                   >{{third.authName}}</el-tag>
                 </el-col>
               </el-row>
@@ -65,6 +75,7 @@
     </el-table>
 
     <!-- 角色分配对话框 -->
+
     <el-dialog title="权限分配" :visible.sync="grandDialogTableVisible">
       <el-tree
         ref="tree"
@@ -80,15 +91,41 @@
         <el-button type="primary" @click="grandRights">确 定</el-button>
       </div>
     </el-dialog>
+
+    <!-- 添加角色对话框 -->
+    <el-dialog title="添加角色" :visible.sync="addDialogFormVisible">
+      <el-form :model="addRoleForm" :label-width="'80px'" ref="addRoleForm" :rules="rules" >
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="addRoleForm.roleName" autocomplete="off" ></el-input>
+        </el-form-item>
+        <el-form-item label="角色描述" prop="roleDesc">
+          <el-input v-model="addRoleForm.roleDesc" autocomplete="off" @keydown.enter.native="addNewRole" ></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addDialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addNewRole">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getAllroles, delRightById, grandRights } from '@/api/roleList_index'
+import {
+  getAllroles,
+  delRightById,
+  grandRights,
+  addNewRole
+} from '@/api/roleList_index'
 import { getAllrights } from '@/api/rightList_index'
 export default {
   data () {
     return {
+      addRoleForm: {
+        roleName: '',
+        roleDesc: ''
+      },
+      addDialogFormVisible: false,
       cnt: 0,
       roleid: '',
       grandDialogTableVisible: false,
@@ -98,7 +135,12 @@ export default {
         label: 'authName',
         children: 'children'
       },
-      checkedArr: []
+      checkedArr: [],
+      rules: {
+        roleName: [
+          { required: true, message: '请输入角色名称', trigger: 'blur' }
+        ]
+      }
     }
   },
 
@@ -129,7 +171,6 @@ export default {
             if (this.cnt === 0) {
               this.$message.success(res.data.meta.msg)
             }
-
             // console.log(row)
             // 局部刷新展开行
             row.children = res.data.data
@@ -192,16 +233,24 @@ export default {
 
     // 实现角色授权
     async grandRights () {
+      console.log()
       // getCheckedNodes（返回结果是选中节点的数组，根据服务器返回的数据看，返回有父节点的id，能取到所有的父节点元素）
-      // getCheckedKeys(这个取不到父节点元素）
+      // getCheckedKeys(返回选中的子元素的id，这个取不到父节点元素）
       // console.log(this.$refs.tree.getCheckedNodes())
       // console.log(this.$refs.tree.getCheckedKeys())
+      // console.log(this.$refs.tree.getHalfCheckedNodes())  返回的是半选中的节点的key所组成的数组
+      // console.log(this.$refs.tree.getHalfCheckedKeys()) // 返回的是半选中（父级的id）中的节点的key所组成的数组[125，110]
       let arr = this.$refs.tree.getCheckedNodes()
       let temp = []
       console.log(arr)
-      arr.forEach(e => {
-        temp.push(e.id + ',' + e.pid) // ["131,110,125", "132,110,125"]
-      })
+      // arr.forEach(e => {
+      //   temp.push(e.id + ',' + e.pid) // ["131,110,125", "132,110,125"]
+      // })
+      for (var i of arr) {
+        console.log(i)
+        // console.log(arr[i])
+        temp.push(i.id + ',' + i.pid)
+      }
       // 需要把两个数组合并
       temp = temp.join(',').split(',')
       console.log(temp)
@@ -218,8 +267,46 @@ export default {
       } else {
         this.$message.error(res.data.meta.msg)
       }
-    }
 
+      // -----------这里是采用新版的方法
+      //   let pArr = this.$refs.tree.getHalfCheckedKeys() + ',' + this.$refs.tree.getCheckedKeys()
+      //   console.log(pArr)
+      //   let res = await grandRights(this.roleid, pArr)
+      //   console.log(res)
+      //   if (res.data.meta.status === 200) {
+      //     this.$message.success(res.data.meta.msg)
+      //     this.grandDialogTableVisible = false
+      //     this.init()
+      //   } else {
+      //     this.$message.error(res.data.meta.msg)
+      //   }
+    },
+
+    // 弹出添加角色对话框
+    async showAddDialog () {
+      this.addDialogFormVisible = true
+    },
+    addNewRole () {
+      this.$refs.addRoleForm.validate(async valid => {
+        console.log(valid)
+        if (valid) {
+          console.log(this.addRoleForm)
+          let res = await addNewRole(this.addRoleForm)
+          console.log(res)
+          if (res.data.meta.status === 201) {
+            this.$message.success(res.data.meta.msg)
+            // 重置表格
+            this.$refs.addRoleForm.resetFields()
+            this.addDialogFormVisible = false
+            this.init()
+          } else {
+            this.$message.error(res.data.meta.msg)
+          }
+        } else {
+          this.$message.warning('请输入角色名称')
+        }
+      })
+    }
   },
 
   mounted () {
@@ -228,7 +315,7 @@ export default {
     // 获取所有权限列表
     getAllrights('tree')
       .then(res => {
-        // console.log(res)
+        console.log(res)
         this.rightList = res.data.data
       })
       .catch(err => {
