@@ -8,6 +8,7 @@ import VueRouter from 'vue-router'
 import Login from '@/views/login.vue'
 import Home from '@/views/home.vue'
 import Wel from '@/views/wel.vue'
+import Reports from '@/views/reports/reports.vue'
 import Users from '@/views/user/users.vue'
 import RightList from '../views/right/rightList.vue'
 import RolttList from '../views/right/roleList.vue'
@@ -42,6 +43,11 @@ export default new VueRouter({
           name: 'wel',
           path: 'wel',
           component: Wel
+        },
+        {
+          name: 'reports',
+          path: 'reports',
+          component: Reports
         },
         {
           name: 'users',

@@ -46,14 +46,9 @@
             <el-radio label="1" border>是</el-radio>
             <el-radio label="2" border>否</el-radio>
           </el-form-item>
-          <el-form-item>
-            <el-button>取消</el-button>
-            <el-button type="primary" @click="addGoods">确定</el-button>
-          </el-form-item>
         </el-form>
       </el-tab-pane>
       <el-tab-pane label="商品参数" name="1">
-        <label class="el-form-item_label" style="width:140px">能耗</label>
         <el-checkbox-group
           v-model="first.attr_vals"
           v-for="first in goodsData"
@@ -78,27 +73,39 @@
       </el-tab-pane>
       <el-tab-pane label="商品图片" name="3">
         <el-upload
-  class="upload-demo"
-  action="http://192.168.1.102:8888/api/private/v1/upload"
-  :headers="setToken()"
-  :on-preview="handlePreview"
-  :before-upload="handelBefore"
-  :on-remove="handleRemove"
-  :on-success="handelSuccess"
-  :file-list="fileList"
-  list-type="picture"
-  accept="image/gif, image/jpeg">
-  <el-button size="small" type="primary">点击上传</el-button>
-  <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-</el-upload>
+          class="upload-demo"
+          action="http://192.168.1.102:8888/api/private/v1/upload"
+          :headers="setToken()"
+          :on-preview="handlePreview"
+          :before-upload="handelBefore"
+          :on-remove="handleRemove"
+          :on-success="handelSuccess"
+          :file-list="fileList"
+          list-type="picture"
+          accept="image/gif, image/jpeg"
+        >
+          <el-button size="small" type="primary">点击上传</el-button>
+          <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+        </el-upload>
       </el-tab-pane>
-      <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
+      <el-tab-pane label="商品内容" name="4">
+        <quillEditor v-model="goodsForm.goods_introduce"></quillEditor>
+      </el-tab-pane>
     </el-tabs>
+    <div class="btn">
+      <el-button>取消</el-button>
+      <el-button type="primary" @click="addGoods">确定</el-button>
+    </div>
   </div>
 </template>
 
 <script>
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+import { quillEditor } from 'vue-quill-editor'
 import { getAllCate, getStaticData } from '../../api/cate_index'
+import { addGoods } from '../../api/goods_index'
 export default {
   data () {
     return {
@@ -129,7 +136,9 @@ export default {
       activeName: 0
     }
   },
-
+  components: {
+    quillEditor
+  },
   methods: {
     // 判断点击标签页时，判断商品参数和商品属性是否有添加商品分类，因为只有输入了商品分类，这个两个标签才能加载内容
     changTab (activeName, oldActiveName) {
@@ -176,11 +185,6 @@ export default {
       }
     },
 
-    // 添加商品
-    addGoods () {
-      console.log(this.goodsForm)
-    },
-
     // 获取token值
     setToken (obj) {
       let toekn = localStorage.getItem('itcast_manager_token')
@@ -190,7 +194,6 @@ export default {
     // 文件上传前触发的函数
     // 判断文件类型
     handelBefore (file) {
-      console.log(file)
       if (file.type.indexOf('image/') !== 0) {
         this.$message.warning('请选择正确的文件类型格式,比如jpg,png,jpeg...')
         return false
@@ -199,7 +202,6 @@ export default {
 
     // 删除时触发的函数
     handleRemove (file, fileList) {
-      console.log(file, fileList)
       if (!file.response) {
         return
       }
@@ -209,7 +211,6 @@ export default {
           this.goodsForm.pics.splice(i, 1)
         }
       }
-      console.log(this.goodsForm)
     },
 
     // 形成缩略图时触发的函数
@@ -219,15 +220,27 @@ export default {
 
     // 文件上传成功时触发的函数
     handelSuccess (response) {
-      console.log(response)
       if (response.meta.status === 200) {
         this.$message.success(response.meta.msg)
         // 储存图片信息
         this.goodsForm.pics.push({ pic: response.data.tmp_path })
       }
+    },
+    // 添加商品
+    async addGoods () {
       console.log(this.goodsForm)
+      this.goodsForm.goods_cat = this.goodsForm.goods_cat.join(',')
+      try {
+        let res = await addGoods(this.goodsForm)
+        console.log(res)
+        if (res.data.meta.status === 201) {
+          this.$message.success('添加商品成功')
+          this.$router.push({ name: 'list' })
+        }
+      } catch (error) {
+        console.log(error)
+      }
     }
-
   },
 
   mounted () {
