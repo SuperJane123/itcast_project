@@ -10,7 +10,7 @@
     <!-- 步骤条 -->
 
     <el-steps :active="activeName-0" finish-status="success" class="process">
-      <el-step title="步骤 1" :active=1></el-step>
+      <el-step title="步骤 1" :active="1"></el-step>
       <el-step title="步骤 2"></el-step>
       <el-step title="步骤 3"></el-step>
       <el-step title="步骤 4"></el-step>
@@ -18,10 +18,9 @@
     </el-steps>
 
     <!-- 标签页 -->
-
-    <el-tabs tab-position="left" v-model="activeName">
-      <el-tab-pane label="基本信息" name="0">
-        <el-form ref="form" :model="goodsForm" label-width="80px">
+    <el-tabs tab-position="left" v-model="activeName" @tab-click="getName" :before-leave="changTab">
+      <el-tab-pane label="基本信息" name="0" :model="goodsForm">
+        <el-form ref="form" label-width="80px">
           <el-form-item label="商品名称">
             <el-input v-model="goodsForm.goods_name"></el-input>
           </el-form-item>
@@ -32,41 +31,85 @@
             <el-input v-model="goodsForm.goods_weight"></el-input>
           </el-form-item>
           <el-form-item label="商品数量">
-            <el-input v-model="goodsForm. goods_number"></el-input>
+            <el-input v-model="goodsForm.goods_number"></el-input>
           </el-form-item>
           <el-form-item label="商品分类">
             <!-- 添加级联菜单 -->
             <el-cascader
-  :options="cateList"
-  change-on-select
-  :props="catesProp"
-  v-model="goodsForm.goods_name"
-></el-cascader>
+              :options="cateList"
+              change-on-select
+              :props="catesProp"
+              v-model="goodsForm.goods_cat"
+            ></el-cascader>
           </el-form-item>
-             <el-form-item label="是否促销">
-            <el-radio  label="1" border>是</el-radio>
-    <el-radio  label="2" border>否</el-radio>
+          <el-form-item label="是否促销">
+            <el-radio label="1" border>是</el-radio>
+            <el-radio label="2" border>否</el-radio>
           </el-form-item>
           <el-form-item>
             <el-button>取消</el-button>
-            <el-button type="primary">确定</el-button>
+            <el-button type="primary" @click="addGoods">确定</el-button>
           </el-form-item>
         </el-form>
       </el-tab-pane>
-      <el-tab-pane label="商品参数" name="1">商品参数</el-tab-pane>
-      <el-tab-pane label="商品属性" name="2">商品属性</el-tab-pane>
-      <el-tab-pane label="商品图片" name="3">商品图片</el-tab-pane>
+      <el-tab-pane label="商品参数" name="1">
+        <label class="el-form-item_label" style="width:140px">能耗</label>
+        <el-checkbox-group
+          v-model="first.attr_vals"
+          v-for="first in goodsData"
+          :key="first.attr_id"
+          @change="getChecked"
+        >
+          <el-checkbox
+            border
+            :label="second"
+            v-for="(second,index) in first.attr_vals"
+            :key="index"
+          ></el-checkbox>
+        </el-checkbox-group>
+      </el-tab-pane>
+
+      <el-tab-pane label="商品属性" name="2">
+        <el-form ref="form" label-width="80px">
+          <el-form-item :label="val.attr_name" v-for="(val,index) in goodsAttrForm" :key="index">
+            <el-input :value="val.attr_vals"></el-input>
+          </el-form-item>
+        </el-form>
+      </el-tab-pane>
+      <el-tab-pane label="商品图片" name="3">
+        <el-upload
+  class="upload-demo"
+  action="http://192.168.1.102:8888/api/private/v1/upload"
+  :headers="setToken()"
+  :on-preview="handlePreview"
+  :before-upload="handelBefore"
+  :on-remove="handleRemove"
+  :on-success="handelSuccess"
+  :file-list="fileList"
+  list-type="picture"
+  accept="image/gif, image/jpeg">
+  <el-button size="small" type="primary">点击上传</el-button>
+  <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+</el-upload>
+      </el-tab-pane>
       <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
     </el-tabs>
   </div>
 </template>
 
 <script>
-import { getAllCate } from '../../api/cate_index'
+import { getAllCate, getStaticData } from '../../api/cate_index'
 export default {
   data () {
     return {
-      // active的值是数字类型
+      // 图片文件
+      fileList: [],
+      // 商品属性
+      goodsAttrForm: [],
+
+      // 商品参数
+      goodsData: [],
+
       goodsForm: {
         goods_name: '',
         goods_cat: '',
@@ -74,8 +117,8 @@ export default {
         goods_number: '',
         goods_weight: '',
         goods_introduce: '',
-        pics: '',
-        attrs: ''
+        pics: [],
+        attrs: []
       },
       cateList: [],
       catesProp: {
@@ -86,10 +129,111 @@ export default {
       activeName: 0
     }
   },
+
+  methods: {
+    // 判断点击标签页时，判断商品参数和商品属性是否有添加商品分类，因为只有输入了商品分类，这个两个标签才能加载内容
+    changTab (activeName, oldActiveName) {
+      if (!this.goodsForm.goods_cat) {
+        if (activeName === '1' || activeName === '2') {
+          this.$message.warning('请选择商品分类！')
+          activeName = '0'
+          return false
+        }
+      }
+    },
+
+    // 判断点击商品参数、商品属性时所加载的内容
+    async getName () {
+      if (this.activeName === '1') {
+        let id = this.goodsForm.goods_cat[2]
+        // 获取动态数据
+        let res = await getStaticData(id, 'many')
+        console.log(res)
+        if (res.data.meta.status === 200) {
+          this.goodsData = res.data.data
+          for (var i of this.goodsData) {
+            i.attr_vals = i.attr_vals.split(',')
+          }
+        } else {
+          this.$$message.error(res.data.meta.msg)
+        }
+      } else if (this.activeName === '2') {
+        let id = this.goodsForm.goods_cat[2]
+        let res = await getStaticData(id, 'only')
+        console.log(res)
+        this.goodsAttrForm = res.data.data
+      }
+    },
+
+    // 收集商品参数
+    getChecked () {
+      console.log(this.goodsData)
+      for (var i of this.goodsData) {
+        let id = i.attr_id
+        for (var j of i.attr_vals) {
+          this.goodsForm.attrs.push({ attr_id: id, attr_value: j })
+        }
+      }
+    },
+
+    // 添加商品
+    addGoods () {
+      console.log(this.goodsForm)
+    },
+
+    // 获取token值
+    setToken (obj) {
+      let toekn = localStorage.getItem('itcast_manager_token')
+      return { Authorization: toekn }
+    },
+
+    // 文件上传前触发的函数
+    // 判断文件类型
+    handelBefore (file) {
+      console.log(file)
+      if (file.type.indexOf('image/') !== 0) {
+        this.$message.warning('请选择正确的文件类型格式,比如jpg,png,jpeg...')
+        return false
+      }
+    },
+
+    // 删除时触发的函数
+    handleRemove (file, fileList) {
+      console.log(file, fileList)
+      if (!file.response) {
+        return
+      }
+      var temp = file.response.data.tmp_path
+      for (var i of this.goodsForm.pics) {
+        if (i.pic === temp) {
+          this.goodsForm.pics.splice(i, 1)
+        }
+      }
+      console.log(this.goodsForm)
+    },
+
+    // 形成缩略图时触发的函数
+    handlePreview (file) {
+      console.log(file)
+    },
+
+    // 文件上传成功时触发的函数
+    handelSuccess (response) {
+      console.log(response)
+      if (response.meta.status === 200) {
+        this.$message.success(response.meta.msg)
+        // 储存图片信息
+        this.goodsForm.pics.push({ pic: response.data.tmp_path })
+      }
+      console.log(this.goodsForm)
+    }
+
+  },
+
   mounted () {
     getAllCate(3)
       .then(res => {
-        console.log(res)
+        // console.log(res)
         if (res.data.meta.status === 200) {
           this.cateList = res.data.data
         }

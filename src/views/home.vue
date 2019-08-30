@@ -1,8 +1,8 @@
 <template>
   <div class="home">
     <el-container>
-      <el-aside width="200px">
-        <img src="../assets/logo.png" alt="" class="logo">
+      <el-aside width="200px" >
+        <div class="logo"></div>
         <el-menu default-active="2" class="el-menu-vertical-demo"
         :router="true"
         :unique-opened='true'
@@ -47,7 +47,7 @@
         <el-header>
           <span class= "myicon-menu toggle-btn"></span>
           <h1 class="system-title">电商后台管理系统</h1>
-          <a href="javascript" class="welcome">退出</a>
+          <a href="#" class="welcome" @click="logOut">退出</a>
         </el-header>
         <el-main>
 
@@ -67,6 +67,16 @@ export default {
       menusList: []
     }
   },
+
+  methods: {
+  // 退出登陆，把token值去掉
+    logOut () {
+      localStorage.removeItem('itcast_manager_token')
+      // this.$router.push({ name: 'login' })
+      location.href = '/login'
+    }
+  },
+
   mounted () {
     getLeftMenus()
       .then(res => {
@@ -91,10 +101,14 @@ export default {
   }
   .el-container {
     height: 100%;
+    background-color:#F5F5F5;
+
   }
   .el-aside {
     // background-color: #545c64;
     // background-color: #3399CC
+    background-color: #fff
+
   }
   .el-header {
     display: flex;
