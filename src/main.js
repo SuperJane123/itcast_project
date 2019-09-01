@@ -6,8 +6,10 @@ import './styles/index.less'
 
 // 引入路由
 import router from '@/router/router'
-Vue.use(ElementUI)
 
+// 引入vuex
+import store from './views/store/index'
+Vue.use(ElementUI)
 Vue.config.productionTip = false
 
 // 添加导航守卫，to：目标路由对象，里面的一个属性path就是目标路由的path值
@@ -23,6 +25,8 @@ router.beforeEach((to, from, next) => {
 })
 
 new Vue({
+  // 注入vuex
+  store,
   // 注入路由
   router,
   render: h => h(App)

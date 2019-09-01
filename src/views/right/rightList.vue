@@ -35,7 +35,7 @@ export default {
 
   filters: {
     levelFormat (level) {
-      console.log(level)
+      // console.log(level)
       if (level === '0') {
         return '一级菜单'
       } else if (level === '1') {

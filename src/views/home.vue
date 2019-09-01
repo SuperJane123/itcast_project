@@ -47,7 +47,12 @@
         <el-header>
           <span class= "myicon-menu toggle-btn"></span>
           <h1 class="system-title">电商后台管理系统</h1>
-          <a href="#" class="welcome" @click="logOut">退出</a>
+          <div class="welcome">
+            <!-- <span>欢迎你{{$store.state.username}}</span> &nbsp;&nbsp;&nbsp; -->
+            <span>欢迎你{{$store.getters.getUsername}}</span> &nbsp;&nbsp;&nbsp;
+
+          <a href="#"  @click="logOut">退出</a>
+          </div>
         </el-header>
         <el-main>
 
@@ -80,7 +85,7 @@ export default {
   mounted () {
     getLeftMenus()
       .then(res => {
-        console.log(res)
+        // console.log(res)
         if (res.data.meta.status === 200) {
           this.menusList = res.data.data
         }

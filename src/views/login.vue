@@ -49,11 +49,21 @@ export default {
           console.log(this.loginForm)
           login(this.loginForm)
             .then(res => {
-              // console.log(res)
+              console.log(res)
               if (res.data.meta.status === 200) {
                 // 如果登陆成功。储存token，跳转页面
                 localStorage.setItem('itcast_manager_token', res.data.data.token)
+                // 储存名字到vuex中
+                // this.$store.state.username = res.data.data.username
+                // this.$store.commit('setUsername', res.data.data.username)
+                // 使用mutation中的函数---这种方式的调用需要使用commit
+                // 使用action中的函数实现数据的储存
+                // this.$store.dispatch(action中的函数名称，参数....)
+                this.$store.dispatch('setAction', res.data.data.username)
+
                 this.$router.push({ name: 'home' })
+              } else {
+                this.$message.warning(res.data.meta.msg)
               }
             })
             .catch(err => {

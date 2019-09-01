@@ -42,26 +42,31 @@
               v-model="goodsForm.goods_cat"
             ></el-cascader>
           </el-form-item>
-          <el-form-item label="是否促销">
-            <el-radio label="1" border>是</el-radio>
-            <el-radio label="2" border>否</el-radio>
+          <el-form-item label="是否促销" >
+            <el-radio-group v-model="checkedmodel" @change="getChecked">
+              <el-radio   :label="true" border>是</el-radio>
+            <el-radio  :label="false" border>否</el-radio>
+            </el-radio-group>
           </el-form-item>
         </el-form>
       </el-tab-pane>
       <el-tab-pane label="商品参数" name="1">
-        <el-checkbox-group
-          v-model="first.attr_vals"
-          v-for="first in goodsData"
-          :key="first.attr_id"
-          @change="getChecked"
-        >
-          <el-checkbox
-            border
-            :label="second"
-            v-for="(second,index) in first.attr_vals"
-            :key="index"
-          ></el-checkbox>
-        </el-checkbox-group>
+        <el-form ref="form" label-width="80px">
+          <el-form-item :label="val.attr_name" v-for="val in goodsData" :key="val.attr_id">
+            <el-checkbox-group
+              v-model="first.attr_vals"
+              v-for="first in goodsData"
+              :key="first.attr_id"
+            >
+              <el-checkbox
+                border
+                :label="second"
+                v-for="(second,index) in first.attr_vals"
+                :key="index"
+              ></el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </el-form>
       </el-tab-pane>
 
       <el-tab-pane label="商品属性" name="2">
@@ -74,7 +79,7 @@
       <el-tab-pane label="商品图片" name="3">
         <el-upload
           class="upload-demo"
-          action="http://192.168.1.102:8888/api/private/v1/upload"
+          action="http://192.168.1.101:8888/api/private/v1/upload"
           :headers="setToken()"
           :on-preview="handlePreview"
           :before-upload="handelBefore"
@@ -105,10 +110,13 @@ import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
 import { quillEditor } from 'vue-quill-editor'
 import { getAllCate, getStaticData } from '../../api/cate_index'
-import { addGoods } from '../../api/goods_index'
+import { addGoods, getGoodsById, editGoodsbyId } from '../../api/goods_index'
 export default {
   data () {
     return {
+
+      // 是否热销按钮
+      checkedmodel: 'true',
       // 图片文件
       fileList: [],
       // 商品属性
@@ -136,10 +144,19 @@ export default {
       activeName: 0
     }
   },
+
+  // 注册组件
   components: {
     quillEditor
   },
+
+  // 方法
   methods: {
+    // 是否热销
+    getChecked () {
+      console.log(this.checkedmodel)
+    },
+
     // 判断点击标签页时，判断商品参数和商品属性是否有添加商品分类，因为只有输入了商品分类，这个两个标签才能加载内容
     changTab (activeName, oldActiveName) {
       if (!this.goodsForm.goods_cat) {
@@ -157,7 +174,7 @@ export default {
         let id = this.goodsForm.goods_cat[2]
         // 获取动态数据
         let res = await getStaticData(id, 'many')
-        console.log(res)
+        // console.log(res)
         if (res.data.meta.status === 200) {
           this.goodsData = res.data.data
           for (var i of this.goodsData) {
@@ -171,17 +188,6 @@ export default {
         let res = await getStaticData(id, 'only')
         console.log(res)
         this.goodsAttrForm = res.data.data
-      }
-    },
-
-    // 收集商品参数
-    getChecked () {
-      console.log(this.goodsData)
-      for (var i of this.goodsData) {
-        let id = i.attr_id
-        for (var j of i.attr_vals) {
-          this.goodsForm.attrs.push({ attr_id: id, attr_value: j })
-        }
       }
     },
 
@@ -226,24 +232,76 @@ export default {
         this.goodsForm.pics.push({ pic: response.data.tmp_path })
       }
     },
-    // 添加商品
+
+    // 添加商品/编辑商品
     async addGoods () {
-      console.log(this.goodsForm)
+      // 判断是否有id
+      let id = this.$route.params.id
       this.goodsForm.goods_cat = this.goodsForm.goods_cat.join(',')
-      try {
-        let res = await addGoods(this.goodsForm)
-        console.log(res)
-        if (res.data.meta.status === 201) {
-          this.$message.success('添加商品成功')
-          this.$router.push({ name: 'list' })
+      // 判断是否有id，如果有id就请求编辑接口
+      if (id) {
+        console.log(this.goodsForm)
+        try {
+          let res = await editGoodsbyId(id, this.goodsForm)
+          console.log(res)
+          if (res.data.meta.status === 200) {
+            this.$message.success('编辑成功')
+            this.$router.push({ name: 'list' })
+          } else {
+            this.$message.error('编辑失败')
+          }
+        } catch (error) {
+          console.log(error)
+          this.$message.error('服务器出错，请稍后重试')
         }
-      } catch (error) {
-        console.log(error)
+        // 如果有没有id，就是请求添加商品接口
+      } else {
+        this.goodsForm.goods_cat = this.goodsForm.goods_cat.join(',')
+        for (var i of this.goodsData) {
+          let id = i.attr_id
+          for (var j of i.attr_vals) {
+            this.goodsForm.attrs.push({ attr_id: id, attr_value: j })
+          }
+        }
+        try {
+          let res = await addGoods(this.goodsForm)
+          // console.log(res)
+          if (res.data.meta.status === 201) {
+            this.$message.success('添加商品成功')
+            this.$router.push({ name: 'list' })
+          }
+        } catch (error) {
+          console.log(error)
+          this.$message.error('服务器出错，请稍后重试')
+        }
       }
+      // console.log(this.goodsForm)
     }
   },
 
   mounted () {
+    // console.log(this.$route)
+    // 获取商品id
+    let id = this.$route.params.id
+    // 判断如果有id，就获取对应的商品数据
+    if (id) {
+      getGoodsById(id)
+        .then(res => {
+          console.log(res)
+          if (res.data.meta.status === 200) {
+            this.goodsForm = res.data.data
+            // 把goods_cat的"70,96,114"格式转换成数据["70","96","114"]
+            this.goodsForm.goods_cat = this.goodsForm.goods_cat.split(',').map(e => { return Number(e) })
+
+            console.log(this.goodsForm)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    }
+
+    // 获取商品分类数据
     getAllCate(3)
       .then(res => {
         // console.log(res)

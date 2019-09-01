@@ -17,3 +17,27 @@ export const addGoods = (data) => {
 
   })
 }
+
+// 根据id号获取响应的商品
+export const getGoodsById = (id) => {
+  return axios({
+    url: `goods/${id}`
+  })
+}
+
+// 根据id号编辑商品
+export const editGoodsbyId = (id, data) => {
+  return axios({
+    url: `goods/${id}`,
+    method: 'put',
+    data
+  })
+}
+
+// 删除商品
+export const delGoodsById = (id) => {
+  return axios({
+    url: `goods/${id}`,
+    method: 'delete'
+  })
+}

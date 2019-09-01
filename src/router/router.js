@@ -77,9 +77,10 @@ export default new VueRouter({
             },
             {
               name: 'add',
-              path: 'add',
+              path: 'add/:id',
               component: Add
             }
+
           ]
         }
       ]
