@@ -13,7 +13,7 @@
       :show-all-levels="false"
       :props="cateProps"
       v-model="selectedCat_id"
-      @change = change
+      @change="change"
     ></el-cascader>
 
     <!-- 卡片化标签页 -->
@@ -28,14 +28,24 @@
         <el-table :data="paramsFrom" border style="width: 100%">
           <el-table-column type="expand">
             <template slot-scope="scope">
-
               <el-tag
-               closable
-                v-for="(item,index) in scope.row.attr_vals"
+                style="margin-right:10px"
                 :key="index"
-                @close = delTab(scope.row)
-                style="margin-right: 10px"
+                v-for="(item,index) in scope.row.attr_vals"
+                closable
+                :disable-transitions="false"
+                @close="handleClose(tag)"
               >{{item}}</el-tag>
+              <el-input
+                class="input-new-tag"
+                v-if="inputVisible"
+                v-model="inputValue"
+                ref="saveTagInput"
+                size="small"
+                @keyup.enter.native="handleInputConfirm(scope.row)"
+                @blur="handleInputConfirm(scope.row)"
+              ></el-input>
+              <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
             </template>
           </el-table-column>
           <el-table-column type="index" width="50" label="编号"></el-table-column>
@@ -43,36 +53,71 @@
           <el-table-column label="操作" width="180">
             <template slot-scope="scope">
               <el-button type="primary" plain icon="el-icon-edit" size="small"></el-button>
-              <el-button type="danger" plain icon="el-icon-delete" size="small" @click="delAttr(scope.row)"></el-button>
+              <el-button
+                type="danger"
+                plain
+                icon="el-icon-delete"
+                size="small"
+                @click="delAttr(scope.row)"
+              ></el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-tab-pane>
-      <el-tab-pane label="动态属性">动态属性</el-tab-pane>
+      <el-tab-pane label="静态属性">
+        <!-- 按钮 -->
+        <el-row class="addGoodsstatic">
+          <el-col :span="24">
+            <el-button type="success" plain size="small">添加静态属性</el-button>
+          </el-col>
+        </el-row>
+        <!-- 表格 -->
+        <el-table :data="staticFrom" border style="width: 100%">
+          <el-table-column type="index" width="50" label="编号"></el-table-column>
+          <el-table-column prop="attr_name" label="属性名称" width="180"></el-table-column>
+
+          <el-table-column prop="attr_vals" label="属性值" width="180"></el-table-column>
+          <el-table-column prop="address" label="操作">
+            <template slot-scope="scope">
+              <el-button type="primary" plain icon="el-icon-edit" size="small"></el-button>
+              <el-button type="danger" plain icon="el-icon-delete" size="small"></el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-tab-pane>
     </el-tabs>
 
     <!-- 添加参数对话框 -->
     <el-dialog title="添加参数名称" :visible.sync="assdialogFormVisible">
-  <el-form :model="addform" label-width="80px" :rules="rules" ref='addform'>
-    <el-form-item label="参数名称" prop="attr_name">
-      <el-input v-model="addform.attr_name" auto-complete="off"></el-input>
-    </el-form-item>
-
-  </el-form>
-  <div slot="footer" class="dialog-footer">
-    <el-button @click="assdialogFormVisible = false">取 消</el-button>
-    <el-button type="primary" @click="addAttr">确 定</el-button>
-  </div>
-</el-dialog>
-
+      <el-form :model="addform" label-width="80px" :rules="rules" ref="addform">
+        <el-form-item label="参数名称" prop="attr_name">
+          <el-input v-model="addform.attr_name" auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="assdialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addAttr">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getAllCate, getStaticData, delAttrById, addNewAttr } from '../../api/cate_index'
+// 引入组件
+import {
+  getAllCate,
+  getStaticData,
+  delAttrById,
+  addNewAttr
+} from '../../api/cate_index'
 export default {
   data () {
     return {
+      // 静态参数
+      staticFrom: [],
+      // 动态tab标签
+      inputVisible: false,
+      inputValue: '',
       // 分类id
       cat_id: '',
       // 添加参数数据
@@ -107,19 +152,28 @@ export default {
     }
   },
   methods: {
-    //  获取表格动态数据
+    //  获取动态表格动态数据
     init () {
       getStaticData(this.selectedCat_id[2], 'many').then(res => {
         // console.log(res)
         if (res.data.meta.status === 200) {
-          this.cat_id =
-          this.paramsFrom = res.data.data
+          this.cat_id = this.paramsFrom = res.data.data
           for (var i of this.paramsFrom) {
             i.attr_vals = i.attr_vals.split(',')
           }
         }
       })
     },
+
+    // 获取静态表格数据
+    getStatic () {
+      getStaticData(this.selectedCat_id[2], 'only')
+        .then(res => {
+          console.log(res)
+          this.staticFrom = res.data.data
+        })
+    },
+
     // 级联参数发生改变
     change () {
       if (this.selectedCat_id) {
@@ -132,15 +186,14 @@ export default {
       console.log(row)
       let id = row.cat_id
       let attrid = row.attr_id
-      delAttrById(id, attrid)
-        .then(res => {
-          console.log(res)
-        })
+      delAttrById(id, attrid).then(res => {
+        console.log(res)
+      })
     },
 
     // 显示添加参数对话框
     showAddDialog () {
-      this.assdialogFormVisible = true
+      this.asssdialogFormVisible = true
     },
 
     // 添加参数
@@ -148,18 +201,41 @@ export default {
       this.$refs.addform.validate(valid => {
         console.log(valid)
         if (valid) {
-          this.addform.attr_vals = '55,66,77'
-          addNewAttr(this.selectedCat_id[2], this.addform)
-            .then(res => {
-              console.log(res)
-              if (res.data.meta.status === 201) {
-                this.$message.success(res.data.meta.msg)
-                this.assdialogFormVisible = false
-                this.init()
-              }
-            })
+          this.addform.attr_vals = this.inputValue
+          addNewAttr(this.selectedCat_id[2], this.addform).then(res => {
+            console.log(res)
+            if (res.data.meta.status === 201) {
+              this.$message.success(res.data.meta.msg)
+              this.assdialogFormVisible = false
+              this.init()
+            }
+          })
         }
       })
+    },
+
+    handleClose (tag) {
+      this.row.attr_vals.splice(this.row.attr_vals.indexOf(tag), 1)
+    },
+
+    // 以下是在标签中添加参数
+    showInput () {
+      this.inputVisible = true
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus()
+      })
+    },
+
+    handleInputConfirm (row) {
+      console.log(this.inputValue)
+      console.log(row)
+      let inputValue = this.inputValue
+      if (inputValue) {
+        row.attr_vals.push(inputValue)
+        this.addform.attr_vals = this.inputValue
+      }
+      this.inputVisible = false
+      this.inputValue = ''
     }
   },
 
@@ -172,6 +248,8 @@ export default {
       }
     })
     this.init()
+
+    this.getStatic()
   }
 }
 </script>
