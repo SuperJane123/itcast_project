@@ -79,7 +79,7 @@
       <el-tab-pane label="商品图片" name="3">
         <el-upload
           class="upload-demo"
-          action="http://192.168.1.101:8888/api/private/v1/upload"
+          action="http://192.168.70.57:8888/api/private/v1/upload"
           :headers="setToken()"
           :on-preview="handlePreview"
           :before-upload="handelBefore"

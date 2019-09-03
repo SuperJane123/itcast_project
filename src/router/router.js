@@ -15,6 +15,7 @@ import RolttList from '../views/right/roleList.vue'
 import Goods from '../views/goods/goods.vue'
 import List from '../views/goods/list.vue'
 import Add from '../views/goods/add.vue'
+import Params from '../views/goods/params.vue'
 
 // 让vue使用路由管理
 Vue.use(VueRouter)
@@ -82,6 +83,11 @@ export default new VueRouter({
             }
 
           ]
+        },
+        {
+          name: 'params',
+          path: 'params',
+          component: Params
         }
       ]
     }
