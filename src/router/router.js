@@ -9,6 +9,8 @@ import Login from '@/views/login.vue'
 import Home from '@/views/home.vue'
 import Wel from '@/views/wel.vue'
 import Reports from '@/views/reports/reports.vue'
+// import Reports from '@/views/reports/highcharts.vue'
+
 import Users from '@/views/user/users.vue'
 import RightList from '../views/right/rightList.vue'
 import RolttList from '../views/right/roleList.vue'
